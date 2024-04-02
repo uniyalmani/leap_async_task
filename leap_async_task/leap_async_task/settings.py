@@ -134,7 +134,14 @@ STATIC_URL = 'static/'
 
 REDIS_URL = os.getenv('REDIS_URL', env_values.get('REDIS_URL'))
 from .dramatiq_config import configure_redis_broker
+
+if not REDIS_URL:
+    raise ValueError("REDIS_URL environment variable is not set.")
+
+# Configure Redis broker
 configure_redis_broker(REDIS_URL)
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 

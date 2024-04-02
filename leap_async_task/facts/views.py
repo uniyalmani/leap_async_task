@@ -2,10 +2,9 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from .tasks import fetch_fact, get_cat_fact
-from serializers import CatFactSerializer
-from models import CatFact
-# Create your views here.
+from .tasks import fetch_fact
+from .models import CatFact
+
 
 @api_view(['GET'])
 def health_check(request):
@@ -16,7 +15,7 @@ def health_check(request):
 @api_view(['GET'])
 def fetch_fact_view(request):
     try:
-        success, message = fetch_fact.send().get()
+        message = fetch_fact.send()
         return Response(data={'success': True})
     except Exception as e:
         return Response({'success': False, 'error': str(e)})
@@ -27,7 +26,7 @@ def get_fact(request):
     try:
         fact = CatFact.objects.order_by('-fetched_at').first()
         if fact:
-            return Response({'fact': fact.text})
+            return Response({'fact': fact.text, "user_id": fact.user_id, "fetched_at": fact.fetched_at})
         else:
             return Response({'error': 'no_task_has_been_queued_yet'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:

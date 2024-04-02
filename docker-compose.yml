@@ -13,7 +13,7 @@ services:
       - .:/usr/src/app
 
     ports:  
-      - "8080:8080"
+      - "80:8080"
 
   redis:
     image: redis:latest
@@ -22,3 +22,17 @@ services:
       - "6379:6379"
     volumes:
       - .:/redis/data
+  
+  worker: 
+    container_name: worker
+    build: 
+      context: .  # Build both the Django and worker images from the same context
+      dockerfile: Dockerfile.worker
+    depends_on:
+      - redis
+      - leap_async_task
+    environment:
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - .:/usr/src/app
+    # command: ["bash", "-c", "pip install -U 'dramatiq[redis, watch]' requests  && python /app/worker.py"]
